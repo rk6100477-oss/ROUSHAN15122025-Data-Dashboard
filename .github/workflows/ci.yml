@@ -52,12 +52,18 @@ jobs:
         with:
           name: test-reports
           path: reports/
-      - name: Show pytest log (always)
+      - name: Show pytest log and junit (always)
         if: always()
         run: |
-          echo "--- pytest log (tail 200 lines) ---"
+          echo "--- pytest log (full) ---"
           if [ -f reports/pytest.log ]; then
-            tail -n 200 reports/pytest.log || true
+            sed -n '1,2000p' reports/pytest.log || true
           else
-            echo "No pytest.log found"
+            echo "No reports/pytest.log found"
+          fi
+          echo "\n--- junit xml (first 200 lines) ---"
+          if [ -f reports/junit.xml ]; then
+            sed -n '1,200p' reports/junit.xml || true
+          else
+            echo "No reports/junit.xml found"
           fi
