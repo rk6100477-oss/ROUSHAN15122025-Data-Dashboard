@@ -32,14 +32,27 @@ jobs:
           mkdir -p reports
           set -o pipefail
           pytest -vv --junit-xml=reports/junit.xml | tee reports/pytest.log
+      - name: Dump CI environment (for debugging)
+        if: always()
+        run: |
+          echo "--- python info ---"
+          python -V || true
+          echo "--- pip list ---"
+          pip list || true
+          echo "--- repo files ---"
+          ls -la || true
       - name: Upload test reports artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: reports/
-      - name: Show pytest log (on failure)
-        if: failure()
+      - name: Show pytest log (always)
+        if: always()
         run: |
-          echo "--- pytest log ---"
-          cat reports/pytest.log
+          echo "--- pytest log (tail 200 lines) ---"
+          if [ -f reports/pytest.log ]; then
+            tail -n 200 reports/pytest.log || true
+          else
+            echo "No pytest.log found"
+          fi
