@@ -27,5 +27,19 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: python -m pip install --upgrade pip && pip install -r requirements.txt
-      - name: Run tests
-        run: pytest -q
+      - name: Run tests (verbose, save reports)
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          pytest -vv --junit-xml=reports/junit.xml | tee reports/pytest.log
+      - name: Upload test reports artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: reports/
+      - name: Show pytest log (on failure)
+        if: failure()
+        run: |
+          echo "--- pytest log ---"
+          cat reports/pytest.log
